@@ -36,6 +36,9 @@ private let DefaultInnerLineHeight: Int = 21
     /// Called when custom actions are called by callbacks in the JS
     /// By default, this method is not used unless called by some custom JS that you add
     @objc optional func richEditor(_ editor: RichEditorView, handle action: String)
+
+    /// Called when text formatting input mode changes
+    optional func richEditor(_ editor: RichEditorView, mode: RichEditorDefaultOption, isActive: Bool)
 }
 
 /// RichEditorView is a UIView that displays richly styled text, and allows it to be edited in a WYSIWYG fashion.
@@ -263,11 +266,17 @@ private let DefaultInnerLineHeight: Int = 21
         runJS("RE.redo()")
     }
 
+    private var isBoldActive = false
     public func bold() {
+        isBoldActive.toggle()
+        delegate?.richEditor?(self, mode: .bold, isActive: isBoldActive)
         runJS("RE.setBold()")
     }
 
+    private var isItalicActive = false
     public func italic() {
+        isItalicActive.toggle()
+        delegate?.richEditor?(self, mode: .italic, isActive: isItalicActive)
         runJS("RE.setItalic()")
     }
 
