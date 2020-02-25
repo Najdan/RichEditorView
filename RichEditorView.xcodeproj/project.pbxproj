@@ -11,6 +11,7 @@
 		B250A85324048C33002C18C6 /* UIColor+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B250A85124048C33002C18C6 /* UIColor+Extensions.swift */; };
 		B250A85424048C33002C18C6 /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B250A85224048C33002C18C6 /* String+Extensions.swift */; };
 		B250A85624048D3B002C18C6 /* Icons.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B250A85524048D3B002C18C6 /* Icons.xcassets */; };
+		B250A85824049B87002C18C6 /* RichEditorDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B250A85724049B87002C18C6 /* RichEditorDelegate.swift */; };
 		FBA6AAFF1AD3EC9F00721644 /* RichEditorView.h in Headers */ = {isa = PBXBuildFile; fileRef = FBA6AAFE1AD3EC9F00721644 /* RichEditorView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FBA6AB051AD3EC9F00721644 /* RichEditorView.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBA6AAF91AD3EC9F00721644 /* RichEditorView.framework */; };
 		FBA6AB0C1AD3EC9F00721644 /* RichEditorViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA6AB0B1AD3EC9F00721644 /* RichEditorViewTests.swift */; };
@@ -39,6 +40,7 @@
 		B250A85124048C33002C18C6 /* UIColor+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UIColor+Extensions.swift"; path = "Classes/UIColor+Extensions.swift"; sourceTree = "<group>"; };
 		B250A85224048C33002C18C6 /* String+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "String+Extensions.swift"; path = "Classes/String+Extensions.swift"; sourceTree = "<group>"; };
 		B250A85524048D3B002C18C6 /* Icons.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Icons.xcassets; sourceTree = "<group>"; };
+		B250A85724049B87002C18C6 /* RichEditorDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RichEditorDelegate.swift; sourceTree = "<group>"; };
 		FBA6AAF91AD3EC9F00721644 /* RichEditorView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RichEditorView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FBA6AAFD1AD3EC9F00721644 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FBA6AAFE1AD3EC9F00721644 /* RichEditorView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RichEditorView.h; sourceTree = "<group>"; };
@@ -141,6 +143,7 @@
 				B250A84F24048C2A002C18C6 /* RichEditorWebView.swift */,
 				B250A85224048C33002C18C6 /* String+Extensions.swift */,
 				B250A85124048C33002C18C6 /* UIColor+Extensions.swift */,
+				B250A85724049B87002C18C6 /* RichEditorDelegate.swift */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -286,6 +289,7 @@
 				B250A85324048C33002C18C6 /* UIColor+Extensions.swift in Sources */,
 				FBA6AB8B1AD3ED3C00721644 /* RichEditorToolbar.swift in Sources */,
 				B250A85024048C2A002C18C6 /* RichEditorWebView.swift in Sources */,
+				B250A85824049B87002C18C6 /* RichEditorDelegate.swift in Sources */,
 				FBA6AB8C1AD3ED3C00721644 /* RichEditorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

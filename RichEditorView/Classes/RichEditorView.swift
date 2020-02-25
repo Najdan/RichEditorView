@@ -10,37 +10,6 @@ import WebKit
 /// The value we hold in order to be able to set the line height before the JS completely loads.
 private let DefaultInnerLineHeight: Int = 21
 
-/// RichEditorDelegate defines callbacks for the delegate of the RichEditorView
-@objc public protocol RichEditorDelegate: class {
-    /// Called when the inner height of the text being displayed changes
-    /// Can be used to update the UI
-    @objc optional func richEditor(_ editor: RichEditorView, heightDidChange height: Int)
-
-    /// Called whenever the content inside the view changes
-    @objc optional func richEditor(_ editor: RichEditorView, contentDidChange content: String)
-
-    /// Called when the rich editor starts editing
-    @objc optional func richEditorTookFocus(_ editor: RichEditorView)
-
-    /// Called when the rich editor stops editing or loses focus
-    @objc optional func richEditorLostFocus(_ editor: RichEditorView)
-
-    /// Called when the RichEditorView has become ready to receive input
-    /// More concretely, is called when the internal WKWebView loads for the first time, and contentHTML is set
-    @objc optional func richEditorDidLoad(_ editor: RichEditorView)
-
-    /// Called when the internal WKWebView begins loading a URL that it does not know how to respond to
-    /// For example, if there is an external link, and then the user taps it
-    @objc optional func richEditor(_ editor: RichEditorView, shouldInteractWith url: URL) -> Bool
-
-    /// Called when custom actions are called by callbacks in the JS
-    /// By default, this method is not used unless called by some custom JS that you add
-    @objc optional func richEditor(_ editor: RichEditorView, handle action: String)
-
-    /// Called when text formatting input mode changes
-    optional func richEditor(_ editor: RichEditorView, mode: RichEditorDefaultOption, isActive: Bool)
-}
-
 /// RichEditorView is a UIView that displays richly styled text, and allows it to be edited in a WYSIWYG fashion.
 @objcMembers open class RichEditorView: UIView, UIScrollViewDelegate, WKNavigationDelegate, UIGestureRecognizerDelegate {
     /// The delegate that will receive callbacks when certain actions are completed.
@@ -72,7 +41,7 @@ private let DefaultInnerLineHeight: Int = 21
     /// Is continually updated as the text is being edited.
     open private(set) var contentHTML: String = "" {
         didSet {
-            delegate?.richEditor?(self, contentDidChange: contentHTML)
+            delegate?.richEditor(self, contentDidChange: contentHTML)
         }
     }
 
@@ -80,7 +49,7 @@ private let DefaultInnerLineHeight: Int = 21
     /// Is continually being updated as the text is edited.
     open private(set) var editorHeight: Int = 0 {
         didSet {
-            delegate?.richEditor?(self, heightDidChange: editorHeight)
+            delegate?.richEditor(self, heightDidChange: editorHeight)
         }
     }
 
@@ -269,14 +238,14 @@ private let DefaultInnerLineHeight: Int = 21
     private var isBoldActive = false
     public func bold() {
         isBoldActive.toggle()
-        delegate?.richEditor?(self, mode: .bold, isActive: isBoldActive)
+        delegate?.richEditor(self, mode: .bold, isActive: isBoldActive)
         runJS("RE.setBold()")
     }
 
     private var isItalicActive = false
     public func italic() {
         isItalicActive.toggle()
-        delegate?.richEditor?(self, mode: .italic, isActive: isItalicActive)
+        delegate?.richEditor(self, mode: .italic, isActive: isItalicActive)
         runJS("RE.setItalic()")
     }
 
@@ -458,7 +427,7 @@ private let DefaultInnerLineHeight: Int = 21
         // User is tapping on a link, so we should react accordingly
         if navigationAction.navigationType == .linkActivated {
             if let url = navigationAction.request.url {
-                if delegate?.richEditor?(self, shouldInteractWith: url) ?? false {
+                if delegate?.richEditor(self, shouldInteractWith: url) ?? false {
                     return decisionHandler(WKNavigationActionPolicy.allow);
                 }
             }
@@ -564,7 +533,7 @@ private let DefaultInnerLineHeight: Int = 21
                 placeholder = placeholderText
                 lineHeight = DefaultInnerLineHeight
 
-                delegate?.richEditorDidLoad?(self)
+                delegate?.richEditorDidLoad(self)
             }
             updateHeight()
         }
@@ -579,10 +548,10 @@ private let DefaultInnerLineHeight: Int = 21
             updateHeight()
         }
         else if method.hasPrefix("focus") {
-            delegate?.richEditorTookFocus?(self)
+            delegate?.richEditorTookFocus(self)
         }
         else if method.hasPrefix("blur") {
-            delegate?.richEditorLostFocus?(self)
+            delegate?.richEditorLostFocus(self)
         }
         else if method.hasPrefix("action/") {
             runJS("RE.getHtml()") { content in
@@ -594,7 +563,7 @@ private let DefaultInnerLineHeight: Int = 21
                 let range = method.range(of: actionPrefix)!
                 let action = method.replacingCharacters(in: range, with: "")
 
-                self.delegate?.richEditor?(self, handle: action)
+                self.delegate?.richEditor(self, handle: action)
             }
         }
     }
