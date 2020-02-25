@@ -40,7 +40,7 @@
 		B250A85124048C33002C18C6 /* UIColor+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UIColor+Extensions.swift"; path = "Classes/UIColor+Extensions.swift"; sourceTree = "<group>"; };
 		B250A85224048C33002C18C6 /* String+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "String+Extensions.swift"; path = "Classes/String+Extensions.swift"; sourceTree = "<group>"; };
 		B250A85524048D3B002C18C6 /* Icons.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Icons.xcassets; sourceTree = "<group>"; };
-		B250A85724049B87002C18C6 /* RichEditorDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RichEditorDelegate.swift; sourceTree = "<group>"; };
+		B250A85724049B87002C18C6 /* RichEditorDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RichEditorDelegate.swift; path = Classes/RichEditorDelegate.swift; sourceTree = "<group>"; };
 		FBA6AAF91AD3EC9F00721644 /* RichEditorView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RichEditorView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FBA6AAFD1AD3EC9F00721644 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FBA6AAFE1AD3EC9F00721644 /* RichEditorView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RichEditorView.h; sourceTree = "<group>"; };
@@ -137,13 +137,13 @@
 		FBA6AB151AD3ED1700721644 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				B250A85724049B87002C18C6 /* RichEditorDelegate.swift */,
 				FBA6AB851AD3ED3C00721644 /* RichEditorOptionItem.swift */,
 				FBA6AB861AD3ED3C00721644 /* RichEditorToolbar.swift */,
 				FBA6AB871AD3ED3C00721644 /* RichEditorView.swift */,
 				B250A84F24048C2A002C18C6 /* RichEditorWebView.swift */,
 				B250A85224048C33002C18C6 /* String+Extensions.swift */,
 				B250A85124048C33002C18C6 /* UIColor+Extensions.swift */,
-				B250A85724049B87002C18C6 /* RichEditorDelegate.swift */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
