@@ -38,7 +38,7 @@ public protocol RichEditorDelegate: class {
     func richEditor(_ editor: RichEditorView, mode: RichEditorDefaultOption, isActive: Bool)
 }
 
-extension RichEditorDelegate {
+public extension RichEditorDelegate {
 
     func richEditor(_ editor: RichEditorView, heightDidChange height: Int) { }
 
