@@ -12,11 +12,11 @@ import UIKit
 public protocol RichEditorOption {
 
     /// The image to be displayed in the RichEditorToolbar.
-    var image: UIImage? { get }
+    var image: UIImage? { get set }
 
     /// The title of the item.
     /// If `image` is nil, this will be used for display in the RichEditorToolbar.
-    var title: String { get }
+    var title: String { get set }
 
     /// The action to be evoked when the action is tapped
     /// - parameter editor: The RichEditorToolbar that the RichEditorOption was being displayed in when tapped.
@@ -51,7 +51,7 @@ public struct RichEditorOptionItem: RichEditorOption {
 }
 
 /// RichEditorOptions is an enum of standard editor actions
-public enum RichEditorDefaultOption: RichEditorOption {
+public enum RichEditorDefaultOption {
 
     case clear
     case undo
