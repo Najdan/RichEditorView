@@ -111,7 +111,7 @@ private let DefaultInnerLineHeight: Int = 21
         webView.scrollView.isScrollEnabled = isScrollEnabled
         webView.scrollView.bounces = true
         webView.scrollView.delegate = self
-        webView.scrollView.clipsToBounds = false
+        webView.scrollView.clipsToBounds = true
         addSubview(webView)
 
         if let filePath = Bundle(for: RichEditorView.self).path(forResource: "rich_editor", ofType: "html") {
