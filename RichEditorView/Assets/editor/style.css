@@ -28,6 +28,7 @@ body {
     overflow: auto;
     margin: 0;
     font: -apple-system-body;
+    word-break: break-word;
 }
 
 @media (prefers-color-scheme: dark) {
