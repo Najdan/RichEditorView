@@ -109,7 +109,7 @@ private let DefaultInnerLineHeight: Int = 21
         webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         webView.configuration.dataDetectorTypes = WKDataDetectorTypes()
         webView.scrollView.isScrollEnabled = isScrollEnabled
-        webView.scrollView.bounces = true
+        webView.scrollView.bounces = false
         webView.scrollView.delegate = self
         webView.scrollView.clipsToBounds = true
         addSubview(webView)
