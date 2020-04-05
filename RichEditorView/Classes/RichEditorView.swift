@@ -49,7 +49,9 @@ private let DefaultInnerLineHeight: Int = 21
     /// Is continually being updated as the text is edited.
     open private(set) var editorHeight: Int = 0 {
         didSet {
-            delegate?.richEditor(self, heightDidChange: editorHeight)
+            if editorHeight != oldValue {
+                delegate?.richEditor(self, heightDidChange: editorHeight)
+            }
         }
     }
 
@@ -485,7 +487,8 @@ private let DefaultInnerLineHeight: Int = 21
     }
 
     private func updateHeight() {
-        runJS("document.getElementById('editor').clientHeight") { heightString in
+        runJS("document.getElementById('editor').offsetHeight") { [weak self] heightString in
+            guard let self = self else { return }
             let height = Int(heightString) ?? 0
             if self.editorHeight != height {
                 self.editorHeight = height
@@ -545,9 +548,9 @@ private let DefaultInnerLineHeight: Int = 21
                 placeholder = placeholderText
                 lineHeight = DefaultInnerLineHeight
 
+                updateHeight()
                 delegate?.richEditorDidLoad(self)
             }
-            updateHeight()
         }
         else if method.hasPrefix("input") {
             scrollCaretToVisible()
