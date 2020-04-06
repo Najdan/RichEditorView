@@ -17,7 +17,7 @@
 
 const RE = {};
 
-RE.editor = document.getElementById('editor');
+RE.editor = document.getElementById('re-editor');
 
 // Not universally supported, but seems to work in iOS 7 and 8
 document.addEventListener("selectionchange", function() {
@@ -383,7 +383,7 @@ RE.getSelectedHref = function() {
     } else if (tags.length == 1) {
         href = tags[0];
     } else {
-        var node = _findNodeByNameInContainer(sel.anchorNode.parentElement, 'A', 'editor');
+        var node = _findNodeByNameInContainer(sel.anchorNode.parentElement, 'A', 're-editor');
         href = node.href;
     }
 

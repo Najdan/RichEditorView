@@ -157,7 +157,7 @@ private let DefaultInnerLineHeight: Int = 21
     /// The inner height of the editor div.
     /// Fetches it from JS every time, so might be slow!
     private func getClientHeight(handler: @escaping (Int) -> Void) {
-        runJS("document.getElementById('editor').clientHeight") { r in
+        runJS("document.getElementById('re-editor').clientHeight") { r in
             if let r = Int(r) {
                 handler(r)
             } else {
@@ -487,7 +487,7 @@ private let DefaultInnerLineHeight: Int = 21
     }
 
     private func updateHeight() {
-        runJS("document.getElementById('editor').offsetHeight") { [weak self] heightString in
+        runJS("document.getElementById('re-editor').offsetHeight") { [weak self] heightString in
             guard let self = self else { return }
             let height = Int(heightString) ?? 0
             if self.editorHeight != height {
