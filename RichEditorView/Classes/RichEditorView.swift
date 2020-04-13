@@ -47,13 +47,16 @@ private let DefaultInnerLineHeight: Int = 21
 
     /// The internal height of the text being displayed.
     /// Is continually being updated as the text is edited.
-    open private(set) var editorHeight: Int = 0 {
+    open private(set) var editorHeight: CGFloat = 0 {
         didSet {
             if editorHeight != oldValue {
                 delegate?.richEditor(self, heightDidChange: editorHeight)
             }
         }
     }
+
+    /// If content width (horizontal scroll) is wider than width of frame then content will be scalled
+    private var scale: CGFloat = 1.0
 
     /// The line height of the editor. Defaults to 21.
     open private(set) var lineHeight: Int = DefaultInnerLineHeight {
@@ -489,10 +492,41 @@ private let DefaultInnerLineHeight: Int = 21
     private func updateHeight() {
         runJS("document.getElementById('re-editor').offsetHeight") { [weak self] heightString in
             guard let self = self else { return }
-            let height = Int(heightString) ?? 0
-            if self.editorHeight != height {
-                self.editorHeight = height
+            let height = CGFloat(Int(heightString) ?? 0)
+
+            self.runJS("document.getElementById('re-editor').scrollWidth") { [weak self] widthString in
+                guard let self = self else { return }
+                let width = CGFloat(Int(widthString) ?? 0)
+                guard width != 0 else { return }
+                let newScale = self.frame.width / width
+                if newScale != self.scale {
+                    self.scale = newScale
+                    print(self.scale)
+                    if self.scale != 1 {
+                        self.runJS("document.documentElement.outerHTML") {
+                            self.webView.loadHTMLString(self.update(html: $0, withScale: self.scale), baseURL: nil)
+                            let scaledHeight = height * self.scale
+                            if self.editorHeight != scaledHeight {
+                                self.editorHeight = scaledHeight
+                            }
+                        }
+                    }
+                }
             }
+        }
+
+    }
+
+    func update(html: String, withScale scale: CGFloat) -> String {
+        guard let body = html.slice(from: "<body", to: ">") else {
+            return html
+        }
+
+        if body.contains("style=") {
+            let styleString = body.replacingOccurrences(of: "style=\"", with: "style=\"transform: scale(\(scale)); transform-origin: 0% 0%; ")
+            return html.replacingOccurrences(of: body, with: styleString)
+        } else {
+            return html.replacingOccurrences(of: "<body", with: "<body style=\"transform: scale(\(scale)); transform-origin: 0% 0%;\"")
         }
     }
 
@@ -666,6 +700,16 @@ extension WKWebView{
             }
             let imp: IMP = imp_implementationWithBlock(block)
             method_setImplementation(method, imp)
+        }
+    }
+}
+
+extension String {
+    func slice(from: String, to: String) -> String? {
+        return (range(of: from)?.upperBound).flatMap { substringFrom in
+            (range(of: to, range: substringFrom..<endIndex)?.lowerBound).map { substringTo in
+                String(self[substringFrom..<substringTo])
+            }
         }
     }
 }

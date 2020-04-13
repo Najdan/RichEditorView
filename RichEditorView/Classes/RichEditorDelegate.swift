@@ -11,7 +11,7 @@ import Foundation
 public protocol RichEditorDelegate: class {
     /// Called when the inner height of the text being displayed changes
     /// Can be used to update the UI
-    func richEditor(_ editor: RichEditorView, heightDidChange height: Int)
+    func richEditor(_ editor: RichEditorView, heightDidChange height: CGFloat)
 
     /// Called whenever the content inside the view changes
     func richEditor(_ editor: RichEditorView, contentDidChange content: String)
