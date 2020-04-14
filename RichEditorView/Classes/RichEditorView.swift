@@ -23,12 +23,46 @@ private let DefaultInnerLineHeight: Int = 21
     }
 
     /// The internal WKWebView that is used to display the text.
-    open private(set) var webView: RichEditorWebView
+    open private(set) lazy var webView: RichEditorWebView = {
+        guard let scriptPath = Bundle(for: RichEditorView.self).path(forResource: "rich_editor", ofType: "js"),
+            let script = try? String(contentsOfFile: scriptPath, encoding: String.Encoding.utf8)
+        else { fatalError("Unable to find javscript/html for rich text editor") }
+
+        let configuration = WKWebViewConfiguration()
+
+        configuration.userContentController.addUserScript(
+            WKUserScript(source: script,
+                         injectionTime: .atDocumentEnd,
+                         forMainFrameOnly: true
+            )
+        )
+
+        ["windowSizeDidChange"].forEach {
+            configuration.userContentController.add(WeakScriptMessageHandler(delegate: self), name: $0)
+        }
+
+        let webView = RichEditorWebView(frame: .zero, configuration: configuration)
+        // configure webview
+        webView.frame = bounds
+        webView.keyboardDisplayRequiresUserAction = false
+        webView.navigationDelegate = self
+        webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        webView.configuration.dataDetectorTypes = WKDataDetectorTypes()
+        webView.scrollView.isScrollEnabled = isScrollEnabled
+        webView.scrollView.bounces = false
+        webView.scrollView.delegate = self
+        webView.scrollView.clipsToBounds = true
+        webView.isOpaque = false
+        webView.backgroundColor = .clear
+        webView.scrollView.backgroundColor = .clear
+
+        return webView
+    }()
 
     /// Whether or not scroll is enabled on the view.
     open var isScrollEnabled: Bool = true {
         didSet {
-            webView.scrollView.isScrollEnabled = isScrollEnabled
+            webView.setScrollEnabled(enabled: isScrollEnabled)
         }
     }
 
@@ -96,31 +130,16 @@ private let DefaultInnerLineHeight: Int = 21
     // MARK: Initialization
 
     public override init(frame: CGRect) {
-        webView = RichEditorWebView()
         super.init(frame: frame)
         setup()
     }
 
     required public init?(coder aDecoder: NSCoder) {
-        webView = RichEditorWebView()
         super.init(coder: aDecoder)
         setup()
     }
 
     private func setup() {
-        // configure webview
-        webView.frame = bounds
-        webView.keyboardDisplayRequiresUserAction = false
-        webView.navigationDelegate = self
-        webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        webView.configuration.dataDetectorTypes = WKDataDetectorTypes()
-        webView.scrollView.isScrollEnabled = isScrollEnabled
-        webView.scrollView.bounces = false
-        webView.scrollView.delegate = self
-        webView.scrollView.clipsToBounds = true
-        webView.isOpaque = false
-        webView.backgroundColor = .clear
-        webView.scrollView.backgroundColor = .clear
         addSubview(webView)
 
         if let filePath = Bundle(for: RichEditorView.self).path(forResource: "rich_editor", ofType: "html") {
@@ -151,9 +170,7 @@ private let DefaultInnerLineHeight: Int = 21
 
     private func setHTML(_ value: String) {
         if isEditorLoaded {
-            runJS("RE.setHtml('\(value.escaped)')") { _ in
-                self.updateHeight()
-            }
+            runJS("RE.setHtml('\(value.escaped)')")
         }
     }
 
@@ -489,44 +506,16 @@ private let DefaultInnerLineHeight: Int = 21
         }
     }
 
-    private func updateHeight() {
-        runJS("document.getElementById('re-editor').offsetHeight") { [weak self] heightString in
-            guard let self = self else { return }
-            let height = CGFloat(Int(heightString) ?? 0)
-
-            self.runJS("document.getElementById('re-editor').scrollWidth") { [weak self] widthString in
-                guard let self = self else { return }
-                let width = CGFloat(Int(widthString) ?? 0)
-                guard width != 0 else { return }
-                let newScale = self.frame.width / width
-                if newScale != self.scale {
-                    self.scale = newScale
-                    print(self.scale)
-                    if self.scale != 1 {
-                        self.runJS("document.documentElement.outerHTML") {
-                            self.webView.loadHTMLString(self.update(html: $0, withScale: self.scale), baseURL: nil)
-                            let scaledHeight = height * self.scale
-                            if self.editorHeight != scaledHeight {
-                                self.editorHeight = scaledHeight
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-    }
-
     func update(html: String, withScale scale: CGFloat) -> String {
         guard let body = html.slice(from: "<body", to: ">") else {
             return html
         }
 
         if body.contains("style=") {
-            let styleString = body.replacingOccurrences(of: "style=\"", with: "style=\"transform: scale(\(scale)); transform-origin: 0% 0%; ")
+            let styleString = body.replacingOccurrences(of: "style=\"", with: "style=\"position: fixed; top: 0px; left: 0px; transform: scale(\(scale)); transform-origin: 0% 0%; ")
             return html.replacingOccurrences(of: body, with: styleString)
         } else {
-            return html.replacingOccurrences(of: "<body", with: "<body style=\"transform: scale(\(scale)); transform-origin: 0% 0%;\"")
+            return html.replacingOccurrences(of: "<body", with: "<body style=\" position: fixed; top: 0px; left: 0px; transform: scale(\(scale)); transform-origin: 0% 0%;\"")
         }
     }
 
@@ -581,8 +570,6 @@ private let DefaultInnerLineHeight: Int = 21
                 contentEditable = editingEnabledVar
                 placeholder = placeholderText
                 lineHeight = DefaultInnerLineHeight
-
-                updateHeight()
                 delegate?.richEditorDidLoad(self)
             }
         }
@@ -590,11 +577,7 @@ private let DefaultInnerLineHeight: Int = 21
             scrollCaretToVisible()
             runJS("RE.getHtml()") { content in
                 self.contentHTML = content
-                self.updateHeight()
             }
-        }
-        else if method.hasPrefix("updateHeight") {
-            updateHeight()
         }
         else if method.hasPrefix("focus") {
             delegate?.richEditorTookFocus(self)
@@ -635,10 +618,36 @@ private let DefaultInnerLineHeight: Int = 21
 
 }
 
+extension RichEditorView: WKScriptMessageHandler {
+    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        switch message.name {
+        case "windowSizeDidChange":
+            guard let data = message.body as? [String: CGFloat],
+                let width = data["width"],
+                let height = data["height"] else { return }
+
+            let newScale = self.frame.width / width
+            if newScale != self.scale {
+                self.scale = newScale
+                self.runJS("document.documentElement.outerHTML") {
+                    self.webView.loadHTMLString(self.update(html: $0, withScale: self.scale), baseURL: nil)
+                }
+            }
+
+            let scaledHeight = height * self.scale
+            if self.editorHeight != scaledHeight || self.editorHeight == 0 {
+                self.editorHeight = scaledHeight
+            }
+        default:
+            break
+        }
+    }
+}
+
 typealias OldClosureType =  @convention(c) (Any, Selector, UnsafeRawPointer, Bool, Bool, Any?) -> Void
 typealias NewClosureType =  @convention(c) (Any, Selector, UnsafeRawPointer, Bool, Bool, Bool, Any?) -> Void
 
-extension WKWebView{
+extension WKWebView {
     var keyboardDisplayRequiresUserAction: Bool? {
         get {
             return self.keyboardDisplayRequiresUserAction
@@ -704,6 +713,31 @@ extension WKWebView{
     }
 }
 
+extension WKWebView {
+
+  func setScrollEnabled(enabled: Bool) {
+    self.scrollView.isScrollEnabled = enabled
+    self.scrollView.panGestureRecognizer.isEnabled = enabled
+    self.scrollView.bounces = enabled
+
+    for subview in self.subviews {
+        if let subview = subview as? UIScrollView {
+            subview.isScrollEnabled = enabled
+            subview.bounces = enabled
+            subview.panGestureRecognizer.isEnabled = enabled
+        }
+
+        for subScrollView in subview.subviews {
+            if type(of: subScrollView) == NSClassFromString("WKContentView")! {
+                for gesture in subScrollView.gestureRecognizers! {
+                    subScrollView.removeGestureRecognizer(gesture)
+                }
+            }
+        }
+    }
+  }
+}
+
 extension String {
     func slice(from: String, to: String) -> String? {
         return (range(of: from)?.upperBound).flatMap { substringFrom in
@@ -711,5 +745,17 @@ extension String {
                 String(self[substringFrom..<substringTo])
             }
         }
+    }
+}
+
+fileprivate class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
+    weak var delegate: WKScriptMessageHandler?
+
+    init(delegate: WKScriptMessageHandler) {
+        self.delegate = delegate
+    }
+
+    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        self.delegate?.userContentController(userContentController, didReceive: message)
     }
 }

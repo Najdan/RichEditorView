@@ -43,6 +43,24 @@ RE.rangeOrCaretSelectionExists = function() {
     return false;
 };
 
+// Window size event listener function that will notify webkit through message handlers
+function windowSizeDidChange() {
+    // Get width and height of the window excluding scrollbars
+    var w = RE.editor.scrollWidth;
+    var h = document.documentElement.scrollHeight;
+
+    window.webkit.messageHandlers.windowSizeDidChange.postMessage({
+        'width': w,
+        'height': h
+    });
+}
+
+// Attaching the event listener function to window's resize event
+window.addEventListener("resize", windowSizeDidChange);
+
+//// Calling the function for the first time
+//windowSizeDidChange();
+
 RE.editor.addEventListener("input", function() {
     RE.updatePlaceholder();
     RE.backuprange();
