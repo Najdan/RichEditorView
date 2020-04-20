@@ -44,26 +44,36 @@ RE.rangeOrCaretSelectionExists = function() {
 };
 
 // Window size event listener function that will notify webkit through message handlers
-function windowSizeDidChange() {
-    // Get width and height of the window excluding scrollbars
-    var w = RE.editor.scrollWidth;
-    var h = document.documentElement.scrollHeight;
-
-    window.webkit.messageHandlers.windowSizeDidChange.postMessage({
-        'width': w,
-        'height': h
+function editorSizeDidChange() {
+    window.webkit.messageHandlers.editorSizeDidChange.postMessage({
+        height: RE.editor.scrollHeight,
+        width: RE.editor.scrollWidth
     });
 }
 
-// Attaching the event listener function to window's resize event
-window.addEventListener("resize", windowSizeDidChange);
+RE.getSize = function() {
+    return {
+        width: RE.editor.scrollWidth,
+        height: RE.editor.scrollHeight
+    };
+};
 
-//// Calling the function for the first time
-//windowSizeDidChange();
+function updateWithScale(scale) {
+    var style = RE.editor.style
+    style.position = "fixed";
+    style.top = "0px";
+    style.left = "0px";
+    style.transform = "scale(" + scale + ")";
+    style.transformOrigin = "0% 0%";
+}
+
+// Attaching the event listener function to window's resize event
+window.addEventListener("resize", editorSizeDidChange);
 
 RE.editor.addEventListener("input", function() {
     RE.updatePlaceholder();
     RE.backuprange();
+    editorSizeDidChange() // This may be overhead please check it out
     RE.callback("input");
 });
 
@@ -81,7 +91,7 @@ RE.customAction = function(action) {
 };
 
 RE.updateHeight = function() {
-    RE.callback("updateHeight");
+    editorSizeDidChange();
 }
 
 RE.callbackQueue = [];
@@ -118,6 +128,7 @@ RE.setHtml = function(contents) {
 
     RE.editor.innerHTML = tempWrapper.innerHTML;
     RE.updatePlaceholder();
+    editorSizeDidChange();
 };
 
 RE.getHtml = function() {
