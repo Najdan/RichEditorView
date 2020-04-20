@@ -47,7 +47,7 @@ private let DefaultInnerLineHeight: Int = 21
         webView.frame = bounds
         webView.keyboardDisplayRequiresUserAction = false
         webView.navigationDelegate = self
-        webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        webView.translatesAutoresizingMaskIntoConstraints = false
         webView.configuration.dataDetectorTypes = WKDataDetectorTypes()
         webView.scrollView.isScrollEnabled = isScrollEnabled
         webView.scrollView.bounces = false
@@ -96,7 +96,11 @@ private let DefaultInnerLineHeight: Int = 21
     /// If content width (horizontal scroll) is wider than width of frame then content will be scalled
     private var scale: CGFloat = 1.0 {
         didSet {
-            if oldValue != scale && scale != .nan {
+            if scale > 1 {
+                self.scale = 1
+                return
+            }
+            if oldValue != scale, scale != .nan, scale <= 1 {
                 print("Should scale width to: \(scale)")
                 runJS("updateWithScale(\(scale))") { [weak self] _ in 
                     guard let self = self else { return }
@@ -129,7 +133,9 @@ private let DefaultInnerLineHeight: Int = 21
     /// HTML that will be loaded into the editor view once it finishes initializing.
     public var html: String = "" {
         didSet {
-            setHTML(html)
+            if oldValue != html {
+                setHTML(html)
+            }
         }
     }
 
@@ -167,7 +173,10 @@ private let DefaultInnerLineHeight: Int = 21
 
     private func setup() {
         addSubview(webView)
-
+        webView.leadingAnchor.constraint(equalTo: self.leadingAnchor).isActive = true
+        webView.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
+        webView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
+        webView.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
         if let filePath = Bundle(for: RichEditorView.self).path(forResource: "rich_editor", ofType: "html") {
             let url = URL(fileURLWithPath: filePath, isDirectory: false)
             webView.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())
