@@ -22,6 +22,13 @@ private let DefaultInnerLineHeight: Int = 21
         set { webView.accessoryView = newValue }
     }
 
+    /// Usable when view is reused
+    public func prepareForReuse() {
+        scale = 1
+        html = ""
+        editorHeight = 0
+        editorWidth = 0
+    }
 
     private let configuration = WKWebViewConfiguration()
 
