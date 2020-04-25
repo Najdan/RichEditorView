@@ -22,14 +22,6 @@ private let DefaultInnerLineHeight: Int = 21
         set { webView.accessoryView = newValue }
     }
 
-    /// Usable when view is reused
-    public func prepareForReuse() {
-        scale = 1
-        html = ""
-        editorHeight = 0
-        editorWidth = 0
-    }
-
     private let configuration = WKWebViewConfiguration()
 
     /// The internal WKWebView that is used to display the text.
@@ -89,9 +81,13 @@ private let DefaultInnerLineHeight: Int = 21
 
     /// The internal height of the text being displayed.
     /// Is continually being updated as the text is edited.
-    open private(set) var editorHeight: CGFloat = 0 {
+    open var editorHeight: CGFloat = 0 {
         didSet {
-            if editorHeight != oldValue && editorHeight != CGFloat.infinity {
+            if !editorHeight.isEqual(to: oldValue),
+               !editorHeight.isEqual(to: .nan),
+               !editorHeight.isEqual(to: .infinity),
+               !editorHeight.isEqual(to: 0),
+               isEditorLoaded {
                 delegate?.richEditor(self, heightDidChange: editorHeight)
             }
         }
@@ -107,17 +103,9 @@ private let DefaultInnerLineHeight: Int = 21
                 self.scale = 1
                 return
             }
-            if oldValue != scale, scale != .nan, scale <= 1 {
+            if !oldValue.isEqual(to: scale), !scale.isEqual(to: .nan), scale <= 1 {
                 print("Should scale width to: \(scale)")
-                runJS("updateWithScale(\(scale))") { [weak self] _ in 
-                    guard let self = self else { return }
-                    self.webView.evaluateJavaScript("RE.getSize()") { result, _ in
-                        guard let data = result as? [String: CGFloat],
-                              let editorHeight = data["height"] else { return }
-
-                        self.editorHeight = editorHeight * self.scale
-                    }
-                }
+                runJS("updateWithScale(\(scale))")
             }
         }
     }
@@ -140,7 +128,10 @@ private let DefaultInnerLineHeight: Int = 21
     /// HTML that will be loaded into the editor view once it finishes initializing.
     public var html: String = "" {
         didSet {
-            if oldValue != html {
+            if oldValue != html || html.isEmpty {
+                scale = 1
+                editorHeight = 0
+                editorWidth = 0
                 setHTML(html)
             }
         }
@@ -653,18 +644,21 @@ extension RichEditorView: WKScriptMessageHandler {
         case "editorSizeDidChange":
             guard let data = message.body as? [String: CGFloat],
                   let height = data["height"], 
-                  let width = data["width"] else { return }
+                  let width = data["width"],
+                  !width.isEqual(to: 0) else { return }
 
-            let scaledHeight = height * self.scale
-            if self.editorHeight != scaledHeight || self.editorHeight == 0 {
+            let newScale = self.frame.width / width
+            let scaledHeight = height * newScale
+            if !self.editorHeight.isEqual(to: scaledHeight) || self.editorHeight.isEqual(to: 0) {
                 self.editorHeight = scaledHeight
             }
 
             if !self.editorWidth.isEqual(to: width) {
-                self.editorWidth = width
-                let newScale = self.frame.width / width
                 if !newScale.isEqual(to: self.scale) {
+                    self.editorWidth = editorWidth * newScale
                     self.scale = newScale
+                } else {
+                    self.editorWidth = width
                 }
             }
         default:
