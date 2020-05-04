@@ -90,10 +90,6 @@ RE.customAction = function(action) {
     RE.callback("action/" + action);
 };
 
-RE.updateHeight = function() {
-    editorSizeDidChange();
-}
-
 RE.callbackQueue = [];
 RE.runCallbackQueue = function() {
     if (RE.callbackQueue.length === 0) {
@@ -123,7 +119,7 @@ RE.setHtml = function(contents) {
     var images = tempWrapper.querySelectorAll("img");
 
     for (var i = 0; i < images.length; i++) {
-        images[i].onload = RE.updateHeight;
+        images[i].onload = editorSizeDidChange;
     }
 
     RE.editor.innerHTML = tempWrapper.innerHTML;
@@ -261,7 +257,7 @@ RE.insertImage = function(url, alt) {
     var img = document.createElement('img');
     img.setAttribute("src", url);
     img.setAttribute("alt", alt);
-    img.onload = RE.updateHeight;
+    img.onload = editorSizeDidChange;
 
     RE.insertHTML(img.outerHTML);
     RE.callback("input");

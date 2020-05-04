@@ -458,7 +458,6 @@ private let DefaultInnerLineHeight: Int = 21
     // MARK: WKWebViewDelegate
 
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        // empy
         _setEditorFontColor(editorFontColor)
         _setEditorBackgroundColor(editorBackgroundColor)
     }
@@ -647,7 +646,9 @@ extension RichEditorView: WKScriptMessageHandler {
                   let width = data["width"],
                   !width.isEqual(to: 0) else { return }
 
-            let newScale = self.frame.width / width
+            let calculatedScale = self.frame.width / width
+            // Do not allow scale to be higher than 1 or be 0
+            let newScale = calculatedScale > 1 || calculatedScale.isEqual(to: 0) ? 1 : calculatedScale
             let scaledHeight = height * newScale
             if !self.editorHeight.isEqual(to: scaledHeight) || self.editorHeight.isEqual(to: 0) {
                 self.editorHeight = scaledHeight
