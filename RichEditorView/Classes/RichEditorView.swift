@@ -59,6 +59,19 @@ private let DefaultInnerLineHeight: Int = 21
         return webView
     }()
 
+    public enum UserStyle {
+        case dark, light
+    }
+
+    public func setStyle(_ style: UserStyle) {
+        switch style {
+        case .dark:
+            WKKeyboard.setStyle(with: .dark, on: webView)
+        default:
+            WKKeyboard.setStyle(with: .light, on: webView)
+        }
+    }
+
     /// Whether or not scroll is enabled on the view.
     open var isScrollEnabled: Bool = true {
         didSet {
