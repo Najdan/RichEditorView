@@ -18,6 +18,7 @@
 
 :root {
     color-scheme: light dark;
+    --link-color: blue;
 }
 
 body, html {
@@ -31,9 +32,14 @@ body {
     word-break: break-word;
 }
 
-@media (prefers-color-scheme: dark) {
-    body, #editor {
-    }
+@media screen and (prefers-color-scheme: dark) {
+  :root {
+    --link-color: #93d5ff;
+  }
+}
+
+a {
+    color: var(--link-color);
 }
 
 #re-container {
